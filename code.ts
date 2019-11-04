@@ -39,6 +39,7 @@ function doPost(e) {
         ];
         break;
       default:
+    }
     for (let key of keys) {
       if (e.parameter[key]) {
         addData.push(e.parameter[key]);
