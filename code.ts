@@ -2,7 +2,7 @@
 function doPost(e) {
   try {
     let addData: any[] = [];
-    let timeStamp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');;
+    const timeStamp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');;
     addData.push(timeStamp);
     const sheetName: string[] = e.parameter['sheetName'];
     switch(sheetName) {
