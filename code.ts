@@ -5,9 +5,10 @@ function doPost(e) {
     const timeStamp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');;
     addData.push(timeStamp);
     const sheetName: string[] = e.parameter['sheetName'];
+    let keys: string[] = [];
     switch(sheetName) {
       case 'HarborSコワーキング会員':
-        const keys: string[] = [
+        keys = [
           "name",
           "company_name",
           "mail",
@@ -18,7 +19,7 @@ function doPost(e) {
         ];
         break;
       case 'バーチャルオフィス会員':
-        const keys: string[] = [
+        keys = [
           "name",
           "company_name",
           "mail",
@@ -28,7 +29,7 @@ function doPost(e) {
         ];
         break;
       case 'testGas':
-        const keys: string[] = [
+        keys: = [
           "name",
           "company_name",
           "mail",
