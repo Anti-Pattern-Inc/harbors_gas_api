@@ -2,9 +2,9 @@
 function doPost(e) {
   try {
     let addData: any[] = [];
-    const timeStamp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');;
+    const timeStamp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');
     addData.push(timeStamp);
-    const sheetName: string[] = e.parameter['sheetName'];
+    const sheetName: string = e.parameter['sheetName'];
     let keys: string[] = [];
     switch(sheetName) {
       case 'HarborSコワーキング会員':
