@@ -1,15 +1,43 @@
 // https://github.com/Anti-Pattern-Inc/harbors_gas_api
 function doPost(e) {
   try {
-    const keys: string[] = [
-      "name",
-      "company_name",
-      "mail",
-      "tel",
-      "preferred_visit_date",
-      "remarks"
-    ];
     let addData: any[] = [];
+    let timeStamp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');;
+    addData.push(timeStamp);
+    const sheetName: string[] = e.parameter['sheetName'];
+    switch(sheetName) {
+      case 'HarborSコワーキング会員':
+        const keys: string[] = [
+          "name",
+          "company_name",
+          "mail",
+          "tel",
+          "preferred_visit_date",
+          "frequency",
+          "remarks"
+        ];
+        break;
+      case 'バーチャルオフィス会員':
+        const keys: string[] = [
+          "name",
+          "company_name",
+          "mail",
+          "tel",
+          "preferred_visit_date",
+          "remarks"
+        ];
+        break;
+      case 'testGas':
+        const keys: string[] = [
+          "name",
+          "company_name",
+          "mail",
+          "tel",
+          "preferred_visit_date",
+          "remarks"
+        ];
+        break;
+      default:
     for (let key of keys) {
       if (e.parameter[key]) {
         addData.push(e.parameter[key]);
@@ -17,7 +45,7 @@ function doPost(e) {
       }
       addData.push("");
     }
-    const sheet = SpreadsheetApp.getActive().getSheetByName("testGas");
+    const sheet = SpreadsheetApp.getActive().getSheetByName(sheetName);
     // シートへの書き込み、getRange(開始行、開始列、行数、列数)
     sheet.appendRow(addData);
 
