@@ -29,7 +29,7 @@ function doPost(e) {
         ];
         break;
       case 'testGas':
-        keys: = [
+        keys = [
           "name",
           "company_name",
           "mail",
