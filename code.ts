@@ -10,7 +10,6 @@ function doPost(e) {
       case 'HarborSコワーキング会員':
         keys = [
           "name",
-          "company_name",
           "mail",
           "tel",
           "preferred_visit_date",
