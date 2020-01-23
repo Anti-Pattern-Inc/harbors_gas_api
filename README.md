@@ -12,5 +12,7 @@ and write this
 {"scriptId":"XXXXXXXXXXXXXXXXXXXX"}
 ```
 
+`clasp login`
+
 ## deploy
 clasp push
