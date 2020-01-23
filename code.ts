@@ -27,6 +27,22 @@ function doPost(e) {
           "remarks"
         ];
         break;
+        case 'HarborSLP':
+        keys = [
+          "name",
+          "mail",
+          "tel",
+          "remarks"
+        ];
+        break;
+        case 'バーチャルLP':
+        keys = [
+          "name",
+          "mail",
+          "tel",
+          "remarks"
+        ];
+        break;
       case 'testGas':
         keys = [
           "name",
