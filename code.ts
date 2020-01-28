@@ -27,7 +27,7 @@ function doPost(e) {
           "remarks"
         ];
         break;
-        case 'HarborSLP':
+      case 'HarborSLP':
         keys = [
           "name",
           "mail",
@@ -35,7 +35,7 @@ function doPost(e) {
           "remarks"
         ];
         break;
-        case 'バーチャルLP':
+      case 'バーチャルLP':
         keys = [
           "name",
           "mail",
