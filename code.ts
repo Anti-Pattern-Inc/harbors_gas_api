@@ -32,6 +32,8 @@ function doPost(e) {
           "name",
           "mail",
           "tel",
+          "frequency",
+          "trigger",
           "remarks"
         ];
         break;
@@ -40,6 +42,8 @@ function doPost(e) {
           "name",
           "mail",
           "tel",
+          "frequency",
+          "trigger",
           "remarks"
         ];
         break;
