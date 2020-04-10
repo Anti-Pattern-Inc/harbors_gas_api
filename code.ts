@@ -1,4 +1,4 @@
-// https://github.com/Anti-Pattern-Inc/HarborsAppointmentForm
+// https://github.com/Anti-Pattern-Inc/harbors_gas_api
 import { existEventInCalendar } from './logic'
 
 function doPost(e: { parameter: { [x: string]: any; }; }): any {
