@@ -8,13 +8,13 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
   const CALENDAR_CONTACT_ID = PropertiesService.getScriptProperties().getProperty('CALENDAR_CONTACT_ID');
   
   try {
-    let addData = [];
+    let addData: any[] = [];
     const timeStamp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');
     addData.push(timeStamp);
-    const sheetName = e.parameter['sheetName'];
-    let keys = [];
-    let reserved = false;
-    let eventName = "";
+    const sheetName: string = e.parameter['sheetName'];
+    let keys: string[] = [];
+    let reserved: boolean = false;
+    let eventName: string = "";
     
     switch (sheetName) {
       case 'HarborSコワーキング会員':
@@ -112,8 +112,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
       putlog(eventName + " Id:" + event.getId());
     }
     
-    for (let _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
-      const key = keys_1[_i];
+    for (let key of keys) {
       if (e.parameter[key]) {
         addData.push(e.parameter[key]);
         continue;
