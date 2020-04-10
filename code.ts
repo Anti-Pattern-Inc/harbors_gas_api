@@ -8,13 +8,13 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
   const CALENDAR_CONTACT_ID = PropertiesService.getScriptProperties().getProperty('CALENDAR_CONTACT_ID');
   
   try {
-    let addData = [];
+    let addData: any[] = [];
     const timeStamp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');
     addData.push(timeStamp);
-    const sheetName = e.parameter['sheetName'];
-    let keys = [];
-    let reserved = false;
-    let eventName = "";
+    const sheetName: string = e.parameter['sheetName'];
+    let keys: string[] = [];
+    let reserved: boolean = false;
+    let eventName: string = "";
     
     switch (sheetName) {
       case 'HarborSコワーキング会員':
@@ -83,7 +83,6 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
     //見学予約
     if (reserved == true){
       putlog(eventName);
-
       // カレンダーIDでカレンダーを取得
       const calendarContact = CalendarApp.getCalendarById(CALENDAR_CONTACT_ID); 
       if(calendarContact==null){
@@ -111,8 +110,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
       putlog(eventName + " Id:" + event.getId());
     }
     
-    for (let _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
-      const key = keys_1[_i];
+    for (let key of keys) {
       if (e.parameter[key]) {
         addData.push(e.parameter[key]);
         continue;
@@ -186,4 +184,32 @@ function existEventInCalendar(
     }
     // イベントが一つでもあれば、trueを返却
     return true;
+}
+
+/** 
+ * slackのチャンネルにメッセージを投稿する
+ * @param  {string} message 投稿メッセージ
+ * @return {void}
+ */
+function postMessageToContactChannel(message: string): void {
+  // #contantへのwebhook URLを取得
+  const webhookURL = PropertiesService.getScriptProperties().getProperty('WEBHOOK_URL');
+  // 投稿に必要なデータを用意
+  const jsonData =
+  {
+      "username" : '見学予約フォームbot',  // 通知時に表示されるユーザー名
+      "icon_emoji": ':robot_face:',  // 通知時に表示されるアイコン
+      "text" : message  // 投稿メッセージ
+  };
+  // JSON文字列に変換
+  const payload = JSON.stringify(jsonData);
+
+  // 送信オプションを用意
+  const options: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
+    method: "post",
+    contentType: "application/json",
+    payload: payload
+  }
+  
+  UrlFetchApp.fetch(webhookURL, options);
 }
