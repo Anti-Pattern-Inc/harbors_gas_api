@@ -1,16 +1,14 @@
 // https://github.com/Anti-Pattern-Inc/harbors_gas_api
-import { existEventInCalendar } from './logic'
-
 function doPost(e: { parameter: { [x: string]: any; }; }): any {
   
   //開始
   putlog("開始");
   
   //contact@harbors.sh（harborsお問い合わせスタッフ） のカレンダーID
-  const CALENDAR_CONTACT_ID = PropertiesService.getUserProperties().getProperty('CALENDAR_CONTACT_ID');
+  const CALENDAR_CONTACT_ID = PropertiesService.getScriptProperties().getProperty('CALENDAR_CONTACT_ID');
   
   try {
-    const addData = [];
+    let addData = [];
     const timeStamp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');
     addData.push(timeStamp);
     const sheetName = e.parameter['sheetName'];
@@ -137,7 +135,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
 /*
 クライアントへのレスポンス
 */
-function result(msg: string){
+function result(msg: string): GoogleAppsScript.Content.TextOutput{
   const result = {
     message: msg
   };
@@ -151,7 +149,7 @@ function result(msg: string){
   return out;
 }
 
-function putlog(msg: string){
+function putlog(msg: string): void{
   
   const timeStamp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');
   const stlog = SpreadsheetApp.getActive().getSheetByName("log");
@@ -162,4 +160,30 @@ function putlog(msg: string){
   stlog.appendRow(addData);
   
   console.info(msg);
+}
+
+/** 
+ * カレンダーの指定日時にイベントがあるかチェック
+ * @param  {GoogleAppsScript.Calendar.Calendar} calender カレンダー情報
+ * @param  {Date}     startDate 開始日時
+ * @param  {Date}     endDate   終了日時
+ * @return {boolean} 指定日時にイベントが存在すればtrue、なければfalse
+ */
+function existEventInCalendar(
+    calendar: GoogleAppsScript.Calendar.Calendar,
+    startDate: Date,
+    endDate: Date
+ ): boolean {
+ 
+    // 変数eventsは「CalendarEvent」を持つ配列
+    const events = calendar.getEvents(startDate, endDate);
+    
+    console.log('イベント重複数 %d', events.length);
+    
+    // イベントがなければ、falseを返却
+    if (events.length < 1) {
+       return false;
+    }
+    // イベントが一つでもあれば、trueを返却
+    return true;
 }
