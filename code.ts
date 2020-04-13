@@ -4,9 +4,6 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
   //開始
   putlog("開始");
   
-  //contact@harbors.sh（harborsお問い合わせスタッフ） のカレンダーID
-  const CALENDAR_CONTACT_ID = PropertiesService.getScriptProperties().getProperty('CALENDAR_CONTACT_ID');
-  
   try {
     let addData: any[] = [];
     const timeStamp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');
@@ -85,6 +82,10 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
       putlog(eventName);
       // slack通知
       postMessageToContactChannel('<!channel>「' + eventName + '」に申し込みがありました。');
+
+      //contact@harbors.sh（harborsお問い合わせスタッフ） のカレンダーID
+      const CALENDAR_CONTACT_ID = PropertiesService.getScriptProperties().getProperty('CALENDAR_CONTACT_ID');
+  
       // カレンダーIDでカレンダーを取得
       const calendarContact = CalendarApp.getCalendarById(CALENDAR_CONTACT_ID); 
       if(calendarContact==null){
@@ -161,7 +162,7 @@ function result(msg: string): GoogleAppsScript.Content.TextOutput{
 }
 
 function putlog(msg: string): void{
-  
+  /* デバッグ用
   const timeStamp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');
   const stlog = SpreadsheetApp.getActive().getSheetByName("log");
   const addData = [];
@@ -169,7 +170,7 @@ function putlog(msg: string): void{
   addData.push(msg);
   
   stlog.appendRow(addData);
-  
+  */
   console.info(msg);
 }
 
