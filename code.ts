@@ -110,6 +110,17 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
       //カレンダー登録
       const event = calendarContact.createEvent(eventName, startDate, endDate);
       putlog(eventName + " Id:" + event.getId());
+      try{        
+        //予約成功のメール送信
+        sendReserveMail(e.parameter['mail'], 
+                        e.parameter['name'], 
+                        eventName, 
+                        e.parameter['preferred_visit_date'], 
+                        e.parameter['preferred_visit_time']);
+      }catch(error){
+        putlog(error);
+        throw new Error('メール送信エラー(' + error + ')');
+      }
     }
     
     for (let key of keys) {
@@ -214,4 +225,38 @@ function postMessageToContactChannel(message: string): void {
   }
   
   UrlFetchApp.fetch(webhookURL, options);
+}
+
+/** 
+ * 予約完了メールを送信する
+ * @param {string} mailAddress 送信先アドレス
+ * @param {string} contactName 予約者者名
+ * @param {string} eventName   予約イベント名
+ * @param {string} visitDate   予約日利用日
+ * @param {string} visitTime   利用開始時間
+ * @return void
+ */
+function sendReserveMail(mailAddress :string, contactName :string, eventName :string, visitDate :string, visitTime :string) :void{
+
+  //定義からテンプレートID取得
+  const templateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE');
+
+  // メールオプション
+  var option = {from: 'contact@harbors.sh', name: 'HarborS運営スタッフ'};
+  // 件名
+  var title = eventName + "申込のお知らせ";
+  //　予約完了メールのテンプレートをドキュメントより取得
+  var document = DocumentApp.openById(templateId);
+  var bodyTemplate = document.getBody().getText();
+  // 氏名をセット
+  var body = bodyTemplate.replace("%contactName%", contactName);
+  // イベントをセット
+  body = body.replace("%eventName%", eventName);
+  // 予約日をセット
+  body = body.replace("%visitDate%", visitDate);
+  // 予約時間をセット
+  body = body.replace("%visitTime%", visitTime);
+
+  GmailApp.sendEmail(mailAddress, title, body, option);
+
 }
