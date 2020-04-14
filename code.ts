@@ -243,14 +243,14 @@ function sendReserveMail(mailAddress :string, contactName :string, eventName :st
   const templateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE');
 
   // メールオプション
-  var option = {from: 'contact@harbors.sh', name: 'HarborS運営スタッフ'};
+  let option = {from: 'contact@harbors.sh', name: 'HarborS運営スタッフ'};
   // 件名
-  var title = eventName + "申込のお知らせ";
+  let title = eventName + "申込のお知らせ";
   //　予約完了メールのテンプレートをドキュメントより取得
-  var document = DocumentApp.openById(templateId);
-  var bodyTemplate = document.getBody().getText();
+  let document = DocumentApp.openById(templateId);
+  let bodyTemplate = document.getBody().getText();
   // 氏名をセット
-  var body = bodyTemplate.replace("%contactName%", contactName);
+  let body = bodyTemplate.replace("%contactName%", contactName);
   // イベントをセット
   body = body.replace("%eventName%", eventName);
   // 予約日をセット
