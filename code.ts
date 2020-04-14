@@ -132,7 +132,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
       addData.push("");
     }
     
-    let sheet = SpreadsheetApp.getActive().getSheetByName(sheetName);
+    const sheet = SpreadsheetApp.getActive().getSheetByName(sheetName);
     // シートへの書き込み、getRange(開始行、開始列、行数、列数)
     sheet.appendRow(addData);
     
