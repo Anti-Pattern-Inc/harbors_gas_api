@@ -80,8 +80,6 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
     //見学予約
     if (reserved == true){
       putlog(eventName);
-      // slack通知
-      postMessageToContactChannel('<!channel>「' + eventName + '」に申し込みがありました。');
 
       //contact@harbors.sh（harborsお問い合わせスタッフ） のカレンダーID
       const CALENDAR_CONTACT_ID = PropertiesService.getScriptProperties().getProperty('CALENDAR_CONTACT_ID');
@@ -121,6 +119,14 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
       }catch(error){
         putlog(error);
         throw new Error('メール送信エラー(' + error + ')');
+      }
+
+      try{        
+        // slack通知
+        postMessageToContactChannel('<!channel>「' + eventName + '」に申し込みがありました。');
+      }catch(error){
+        putlog(error);
+        throw new Error('slack送信エラー(' + error + ')');
       }
     }
     
