@@ -25,7 +25,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
           "remarks"
         ];
         reserved = true;
-        eventName = "HarborSコワーキング見学予約";
+        eventName = "コワーキング見学予約";
         break;
       case 'バーチャルオフィス会員':
         keys = [
