@@ -25,7 +25,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
           "remarks"
         ];
         reserved = true;
-        eventName = "コワーキング見学予約";
+        eventName = "コワーキング見学";
         break;
       case 'バーチャルオフィス会員':
         keys = [
@@ -37,7 +37,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
           "preferred_visit_time",
           "remarks"
         ];
-        eventName = "バーチャルオフィス見学予約";
+        eventName = "バーチャルオフィス見学";
         reserved = true;
         break;
       case 'HarborSLP':
@@ -70,7 +70,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
           "preferred_visit_time",
           "remarks"
         ];
-        eventName = "testGas見学予約";
+        eventName = "testGas見学";
         reserved = true;
         break;
       default:
