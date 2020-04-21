@@ -1,19 +1,18 @@
 // https://github.com/Anti-Pattern-Inc/harbors_gas_api
 function doPost(e: { parameter: { [x: string]: any; }; }): any {
-
-  let eventName: string = "";
+  
   //開始
   putlog("開始");
-    
+  
   try {
     let addData: any[] = [];
     const timeStamp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');
     addData.push(timeStamp);
     const sheetName: string = e.parameter['sheetName'];
     let keys: string[] = [];
-    let reserved: boolean = false;      
-    eventName = sheetName;
-
+    let reserved: boolean = false;
+    let eventName: string = "";
+    
     switch (sheetName) {
       case 'HarborSコワーキング会員':
         keys = [
@@ -147,7 +146,6 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
   }
   catch (error) {
     putlog(error);
-    postMessageToContactChannel('<!channel>「' + eventName + '」の申込でエラーが発生しました。\n```エラー内容:' + error + '\nパラメータ:' + JSON.stringify(e.parameter) + '```');
     return result("failed");
   }
 }
