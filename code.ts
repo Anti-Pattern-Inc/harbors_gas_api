@@ -231,8 +231,6 @@ function postMessageToContactChannel(message: string): void {
   // 投稿に必要なデータを用意
   const jsonData =
   {
-      "username" : '見学予約フォームbot',  // 通知時に表示されるユーザー名
-      "icon_emoji": ':robot_face:',  // 通知時に表示されるアイコン
       "text" : message  // 投稿メッセージ
   };
   // JSON文字列に変換
