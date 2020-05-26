@@ -61,6 +61,18 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
           "remarks"
         ];
         break;
+      case 'extends':
+        keys = [
+          "name",
+          "mail",
+          "tel",
+          "preferred_visit_date",
+          "preferred_visit_time",
+          "remarks"
+        ];
+        eventName = "extendsオンライン説明会";
+        reserved = true;
+        break;
       case 'testGas':
         keys = [
           "name",
