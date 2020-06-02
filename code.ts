@@ -127,12 +127,11 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
       
       //カレンダー登録
       let noticeName: string = `${eventName}-${e.parameter['name']}様`;
-      //const event = calendarContact.createEvent(noticeName, startDate, endDate);
-      let webUrl:string = ""
-      let event = createEventToCalendar(noticeName, startDate, endDate, meet)
+      let webUrl: string = "";
+      let event = createEventToCalendar(noticeName, startDate, endDate, meet);
       if (meet){
         //MeetのUrlを取得
-        webUrl = event.conferenceData.entryPoints[0].uri
+        webUrl = event.conferenceData.entryPoints[0].uri;
       }      
       putlog(eventName + " Id:" + event.id);
       try{        
@@ -336,7 +335,7 @@ function createEventToCalendar(noticeName: string,
         conferenceSolutionKey: {
           type: "hangoutsMeet"
         },
-        requestId: "ay6zl8rKvh84"
+        requestId: PropertiesService.getScriptProperties().getProperty('CALENDAR_REQUEST_ID')
        }
     }
   }
