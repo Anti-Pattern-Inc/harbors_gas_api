@@ -126,7 +126,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
       }
       
       //カレンダー登録
-      let noticeName: string = `${eventName}-${e.parameter['name']}様`;
+      let noticeName: string = eventName + "-" + e.parameter['name'] + "様";
       let webUrl: string = "";
       let event = createEventToCalendar(noticeName, startDate, endDate, meet);
       if (meet){
