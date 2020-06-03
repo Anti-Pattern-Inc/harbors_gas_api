@@ -28,10 +28,20 @@ clasp push
 `WEBHOOK_URL`
  Slackの通知先
 
+`CALENDAR_REQUEST_ID`
+ 予約を追加するするときに利用するリクエストID
+
 `CALENDAR_CONTACT_ID`
  予約を追加するカレンダーID
 
 `RESERVE_CONFIRMATION_TEMPLATE`
  予約完了時のメール送信テンプレートID
  
+`RESERVE_CONFIRMATION_TEMPLATE_EXTENDS`
+予約完了時のメール送信テンプレートID(extends)
 
+`AP_CONTACT_EMAIL`
+ CCの送信先
+
+## 本番リリース時の注意
+ メールの送信済みに履歴を残すため「`contact@harbors.sh`」でWebアプリケーションとして導入すること
