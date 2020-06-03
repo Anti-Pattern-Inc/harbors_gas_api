@@ -118,7 +118,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
       putlog("Name:" + e.parameter['name'] +
         " StartDate:" + Utilities.formatDate(startDate,"Asia/Tokyo","yyyy/MM/dd HH:mm:ss") + 
           " EndDate:" + Utilities.formatDate(endDate,"Asia/Tokyo","yyyy/MM/dd HH:mm:ss"));
-          
+      
       // 指定日時に予定が既にある場合は、予約済みステータスをセット
       if (existEventInCalendar(calendarContact, startDate, endDate) == true) {
         putlog("reserved");
