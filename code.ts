@@ -1,10 +1,10 @@
 // https://github.com/Anti-Pattern-Inc/harbors_gas_api
 function doPost(e: { parameter: { [x: string]: any; }; }): any {
-  
+
   let eventName: string = "";
   //開始
   putlog("開始");
-  
+
   try {
     let addData: any[] = [];
     const timeStamp = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');
@@ -15,7 +15,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
     let reserved: boolean = false;
     let meilTemplateId: string = ''
     eventName = sheetName;
-    
+
     switch (sheetName) {
       case 'HarborSコワーキング会員':
         keys = [
@@ -95,36 +95,36 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
       default:
         throw new Error("イベント名不正[" + sheetName + "]");
     }
-    
+
     //見学予約
     if (reserved == true){
       putlog(eventName);
 
       //contact@harbors.sh（harborsお問い合わせスタッフ） のカレンダーID
       const CALENDAR_CONTACT_ID = PropertiesService.getScriptProperties().getProperty('CALENDAR_CONTACT_ID');
-  
+
       // カレンダーIDでカレンダーを取得
-      const calendarContact = CalendarApp.getCalendarById(CALENDAR_CONTACT_ID); 
+      const calendarContact = CalendarApp.getCalendarById(CALENDAR_CONTACT_ID);
       if(calendarContact==null){
         putlog("カレンダーオブジェクト取得失敗");
         throw new Error("カレンダーオブジェクト取得失敗");
       }
-      
+
       const startDate = new Date(e.parameter['preferred_visit_date'] + " " + e.parameter['preferred_visit_time']); //予約開始日
       const endDate = new Date(e.parameter['preferred_visit_date'] + " " + e.parameter['preferred_visit_time']);
       endDate.setHours(endDate.getHours() + 1);//予約終了日（開始＋１時間）
-      
+
       //予約情報
       putlog("Name:" + e.parameter['name'] +
-        " StartDate:" + Utilities.formatDate(startDate,"Asia/Tokyo","yyyy/MM/dd HH:mm:ss") + 
+        " StartDate:" + Utilities.formatDate(startDate,"Asia/Tokyo","yyyy/MM/dd HH:mm:ss") +
           " EndDate:" + Utilities.formatDate(endDate,"Asia/Tokyo","yyyy/MM/dd HH:mm:ss"));
-      
+
       // 指定日時に予定が既にある場合は、予約済みステータスをセット
       if (existEventInCalendar(calendarContact, startDate, endDate) == true) {
         putlog("reserved");
         return result("reserved");
       }
-      
+
       //カレンダー登録
       let noticeName: string = eventName + "-" + e.parameter['name'] + "様";
       let webUrl: string = "";
@@ -132,14 +132,14 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
       if (meet){
         //MeetのUrlを取得
         webUrl = event.conferenceData.entryPoints[0].uri;
-      }      
+      }
       putlog(eventName + " Id:" + event.id);
-      try{        
+      try{
         //予約成功のメール送信
-        sendReserveMail(e.parameter['mail'], 
-                        e.parameter['name'], 
-                        eventName, 
-                        e.parameter['preferred_visit_date'], 
+        sendReserveMail(e.parameter['mail'],
+                        e.parameter['name'],
+                        eventName,
+                        e.parameter['preferred_visit_date'],
                         e.parameter['preferred_visit_time'],
                         PropertiesService.getScriptProperties().getProperty('AP_CONTACT_EMAIL'),
                         webUrl,
@@ -150,16 +150,16 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
         throw new Error('メール送信エラー(' + error + ')');
       }
 
-      try{        
+      try{
         // slack通知
-        postMessageToContactChannel('<!channel>「' + eventName + '」に申し込みがありました。' + 
+        postMessageToContactChannel('<!channel>「' + eventName + '」に申し込みがありました。' +
                                     '\n' + e.parameter['name']+ ' 様 予約日時：' + Utilities.formatDate(startDate,"Asia/Tokyo","yyyy/MM/dd HH:mm"));
       }catch(error){
         putlog(error);
         throw new Error('slack送信エラー(' + error + ')');
       }
     }
-    
+
     for (let key of keys) {
       if (e.parameter[key]) {
         addData.push(e.parameter[key]);
@@ -167,11 +167,11 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
       }
       addData.push("");
     }
-    
+
     const sheet = SpreadsheetApp.getActive().getSheetByName(sheetName);
     // シートへの書き込み、getRange(開始行、開始列、行数、列数)
     sheet.appendRow(addData);
-    
+
     return result("success");
   }
   catch (error) {
@@ -188,13 +188,13 @@ function result(msg: string): GoogleAppsScript.Content.TextOutput{
   const result = {
     message: msg
   };
-  
+
   const out = ContentService.createTextOutput();
   //Mime TypeをJSONに設定
   out.setMimeType(ContentService.MimeType.JSON);
   //JSONテキストをセットする
   out.setContent(JSON.stringify(result));
-  
+
   return out;
 }
 
@@ -205,13 +205,13 @@ function putlog(msg: string): void{
   const addData = [];
   addData.push(timeStamp);
   addData.push(msg);
-  
+
   stlog.appendRow(addData);
   */
   console.info(msg);
 }
 
-/** 
+/**
  * カレンダーの指定日時にイベントがあるかチェック
  * @param  {GoogleAppsScript.Calendar.Calendar} calender カレンダー情報
  * @param  {Date}     startDate 開始日時
@@ -223,12 +223,12 @@ function existEventInCalendar(
     startDate: Date,
     endDate: Date
  ): boolean {
- 
+
     // 変数eventsは「CalendarEvent」を持つ配列
     const events = calendar.getEvents(startDate, endDate);
-    
+
     console.log('イベント重複数 %d', events.length);
-    
+
     // イベントがなければ、falseを返却
     if (events.length < 1) {
        return false;
@@ -237,7 +237,7 @@ function existEventInCalendar(
     return true;
 }
 
-/** 
+/**
  * slackのチャンネルにメッセージを投稿する
  * @param  {string} message 投稿メッセージ
  * @return {void}
@@ -259,11 +259,11 @@ function postMessageToContactChannel(message: string): void {
     contentType: "application/json",
     payload: payload
   }
-  
+
   UrlFetchApp.fetch(webhookURL, options);
 }
 
-/** 
+/**
  * 予約完了メールを送信する
  * @param {string} mailAddress 送信先アドレス
  * @param {string} contactName 予約者者名
@@ -275,13 +275,13 @@ function postMessageToContactChannel(message: string): void {
  * @param {string} meilTemplateId テンプレートID
  * @return void
  */
-function sendReserveMail(mailAddress :string, 
-                         contactName :string, 
-                         eventName :string, 
-                         visitDate :string, 
-                         visitTime :string, 
+function sendReserveMail(mailAddress :string,
+                         contactName :string,
+                         eventName :string,
+                         visitDate :string,
+                         visitTime :string,
                          carbonCopyMail: string,
-                         webUrl :string, 
+                         webUrl :string,
                          meilTemplateId :string) :void{
 
   // メールオプション
@@ -306,16 +306,16 @@ function sendReserveMail(mailAddress :string,
 
 }
 /**
- * 
- * @param noticeName 
- * @param startDate 
- * @param endDate 
+ *
+ * @param noticeName
+ * @param startDate
+ * @param endDate
  * @param meet
  * @returns GoogleAppsScript.Calendar
  */
-function createEventToCalendar(noticeName: string, 
-                               startDate: Date, 
-                               endDate: Date, 
+function createEventToCalendar(noticeName: string,
+                               startDate: Date,
+                               endDate: Date,
                                meet: boolean): GoogleAppsScript.Calendar.Schema.Event{
   // テレビ会議利用のため
   // Googel Calendar API にてカレンダー登録
@@ -339,10 +339,10 @@ function createEventToCalendar(noticeName: string,
        }
     }
   }
-  
+
   if (meet == true){
     return Calendar.Events.insert(event, CALENDAR_CONTACT_ID, {conferenceDataVersion: 1})
   }else{
-    return Calendar.Events.insert(event, CALENDAR_CONTACT_ID) 
+    return Calendar.Events.insert(event, CALENDAR_CONTACT_ID)
   }
 }
