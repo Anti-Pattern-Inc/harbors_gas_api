@@ -11,9 +11,18 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
     addData.push(timeStamp);
     const sheetName: string = e.parameter['sheetName'];
     let keys: string[] = [];
-    let meet: boolean = false;
-    let reserved: boolean = false;
-    let meilTemplateId: string = ''
+    let meilTemplateId: string = ''         // メールテンプレートID
+    let slackMessage : string = '';         // Slack通知用メッセージ
+    let sheetsRangeName : string = '';      // 添付ファイルのIDの設定場所
+
+    const ret = checkContactType(e.parameter['contact_type']);
+    const meet = ret.meet;
+    const reserved = ret.reserved;
+    const sendfile = ret.sendfile;
+    const contactTypeMessage = ret.contactTypeMessage;
+    e.parameter['contact_type'] = contactTypeMessage; //表示用内容書き換え
+    e.parameter['tel'] = '\'' + e.parameter['tel'] ;  //前０が消えるので文字列に変換
+
     eventName = sheetName;
 
     switch (sheetName) {
@@ -22,14 +31,15 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
           "name",
           "mail",
           "tel",
+          "contact_type",
           "preferred_visit_date",
           "preferred_visit_time",
           "frequency",
           "remarks"
         ];
-        reserved = true;
-        eventName = "コワーキング見学";
+        eventName = editEventName(reserved, meet, sendfile, "コワーキングスペース");
         meilTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE');
+        sheetsRangeName = 'CW_EMAIL_ATTACH_FILEID';
         break;
       case 'バーチャルオフィス会員':
         keys = [
@@ -37,13 +47,14 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
           "company_name",
           "mail",
           "tel",
+          "contact_type",
           "preferred_visit_date",
           "preferred_visit_time",
           "remarks"
         ];
-        reserved = true;
-        eventName = "バーチャルオフィス見学";
+        eventName = editEventName(reserved, meet, sendfile, "バーチャルオフィス");
         meilTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE');
+        sheetsRangeName = 'VO_EMAIL_ATTACH_FILEID';
         break;
       case 'HarborSLP':
         keys = [
@@ -70,14 +81,14 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
           "name",
           "mail",
           "tel",
+          "contact_type",
           "preferred_visit_date",
           "preferred_visit_time",
           "remarks"
         ];
-        reserved = true;
-        meet = true;
-        eventName = "extendsオンライン説明会";
+        eventName = editEventName(reserved, meet, sendfile, "extends");
         meilTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE_EXTENDS');
+        sheetsRangeName = 'EX_EMAIL_ATTACH_FILEID';
         break;
       case 'testGas':
         keys = [
@@ -90,7 +101,6 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
           "remarks"
         ];
         eventName = "testGas見学";
-        reserved = true;
         break;
       default:
         throw new Error("イベント名不正[" + sheetName + "]");
@@ -98,51 +108,28 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
 
     //見学予約
     if (reserved == true){
-      putlog(eventName);
-
-      //contact@harbors.sh（harborsお問い合わせスタッフ） のカレンダーID
-      const CALENDAR_CONTACT_ID = PropertiesService.getScriptProperties().getProperty('CALENDAR_CONTACT_ID');
-
-      // カレンダーIDでカレンダーを取得
-      const calendarContact = CalendarApp.getCalendarById(CALENDAR_CONTACT_ID);
-      if(calendarContact==null){
-        putlog("カレンダーオブジェクト取得失敗");
-        throw new Error("カレンダーオブジェクト取得失敗");
-      }
-
+      //オンライン説明会を予約したい
+      //現地の見学説明会を予約したい
       const startDate = new Date(e.parameter['preferred_visit_date'] + " " + e.parameter['preferred_visit_time']); //予約開始日
       const endDate = new Date(e.parameter['preferred_visit_date'] + " " + e.parameter['preferred_visit_time']);
       endDate.setHours(endDate.getHours() + 1);//予約終了日（開始＋１時間）
 
-      //予約情報
-      putlog("Name:" + e.parameter['name'] +
-        " StartDate:" + Utilities.formatDate(startDate,"Asia/Tokyo","yyyy/MM/dd HH:mm:ss") +
-          " EndDate:" + Utilities.formatDate(endDate,"Asia/Tokyo","yyyy/MM/dd HH:mm:ss"));
-
-      // 指定日時に予定が既にある場合は、予約済みステータスをセット
-      if (existEventInCalendar(calendarContact, startDate, endDate) == true) {
-        putlog("reserved");
+      //カレンダー予約／Meet設定
+      const ret = reservedEvent(eventName, e.parameter['name'], startDate, endDate, meet);
+      if (ret.reserved == true){
+        // 予約済み
         return result("reserved");
       }
 
-      //カレンダー登録
-      let noticeName: string = eventName + "-" + e.parameter['name'] + "様";
-      let webUrl: string = "";
-      let event = createEventToCalendar(noticeName, startDate, endDate, meet);
-      if (meet){
-        //MeetのUrlを取得
-        webUrl = event.conferenceData.entryPoints[0].uri;
-      }
-      putlog(eventName + " Id:" + event.id);
+      //予約成功のメール送信
       try{
-        //予約成功のメール送信
         sendReserveMail(e.parameter['mail'],
                         e.parameter['name'],
                         eventName,
                         e.parameter['preferred_visit_date'],
                         e.parameter['preferred_visit_time'],
                         PropertiesService.getScriptProperties().getProperty('AP_CONTACT_EMAIL'),
-                        webUrl,
+                        ret.webUrl,
                         meilTemplateId
                         );
       }catch(error){
@@ -150,10 +137,41 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
         throw new Error('メール送信エラー(' + error + ')');
       }
 
+      //Slack通知用メッセージ作成
+      slackMessage = '<!channel>「' + eventName + '」に申込みがありました。\n' +
+          e.parameter['name']+ ' 様' +
+          '\n予約日時：' + Utilities.formatDate(startDate,"Asia/Tokyo","yyyy/MM/dd HH:mm") +
+          '\n問合せ内容:' + contactTypeMessage;
+
+      // slack通知
       try{
-        // slack通知
-        postMessageToContactChannel('<!channel>「' + eventName + '」に申し込みがありました。' +
-                                    '\n' + e.parameter['name']+ ' 様 予約日時：' + Utilities.formatDate(startDate,"Asia/Tokyo","yyyy/MM/dd HH:mm"));
+        postMessageToContactChannel(slackMessage);
+      }catch(error){
+        putlog(error);
+        throw new Error('slack送信エラー(' + error + ')');
+      }
+    }else if(sendfile == true){
+      //資料を送付してほしい
+      try{
+        sendAttachEmail(e.parameter['mail'],
+                    e.parameter['name'],
+                    eventName,
+                    PropertiesService.getScriptProperties().getProperty('AP_CONTACT_EMAIL'),
+                    sheetsRangeName,
+                    PropertiesService.getScriptProperties().getProperty('ATTACH_EMAIL_TEMPLATE')
+                    );
+      }catch(error){
+        putlog(error);
+        throw new Error('メール送信エラー(' + error + ')');
+      }
+
+      //Slack通知用メッセージ作成
+      slackMessage = '<!channel>「' + eventName + '」に問合せがありました。\n' +
+          e.parameter['name']+ ' 様\n' +
+          '問合せ内容:' + contactTypeMessage;
+      // slack通知
+      try{
+        postMessageToContactChannel(slackMessage);
       }catch(error){
         putlog(error);
         throw new Error('slack送信エラー(' + error + ')');
@@ -181,6 +199,98 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
   }
 }
 
+/**
+ * カレンダー予約を行う
+ * @param eventName イベント名
+ * @param name 予約者
+ * @param startDate 予約開始日時
+ * @param endDate 予約終了日時
+ * @param meet Meet予約フラグ
+ */
+function reservedEvent(eventName: string, name: string , startDate: Date, endDate: Date, meet: boolean){
+  let webUrl: string = ''
+
+  //contact@harbors.sh（harborsお問い合わせスタッフ） のカレンダーID
+  const CALENDAR_CONTACT_ID = PropertiesService.getScriptProperties().getProperty('CALENDAR_CONTACT_ID');
+  try{
+    // カレンダーIDでカレンダーを取得
+    const calendarContact = CalendarApp.getCalendarById(CALENDAR_CONTACT_ID);
+    if(calendarContact==null){
+      putlog("カレンダーオブジェクト取得失敗");
+      throw new Error("カレンダーオブジェクト取得失敗");
+    }
+
+    //予約情報
+    putlog("Name:" + name +
+      " StartDate:" + Utilities.formatDate(startDate,"Asia/Tokyo","yyyy/MM/dd HH:mm:ss") +
+        " EndDate:" + Utilities.formatDate(endDate,"Asia/Tokyo","yyyy/MM/dd HH:mm:ss"));
+
+    // 指定日時に予定が既にある場合は、予約済みステータスをセット
+    if (existEventInCalendar(calendarContact, startDate, endDate) == true) {
+      putlog("reserved");
+      return {reserved: true, webUrl: ''}
+    }
+
+    //カレンダー登録
+    let noticeName: string = eventName + "-" + name + "様";
+    let event = createEventToCalendar(noticeName, startDate, endDate, meet);
+    if (meet){
+      //MeetのUrlを取得
+      webUrl = event.conferenceData.entryPoints[0].uri;
+    }
+
+    return {reserved: false, webUrl: webUrl};
+  }catch(error){
+    throw new Error('カレンダー予約エラー(' + error + ')');
+  }
+}
+
+/**
+ * 申込種別判定
+ * @param contactType フォームから送信される申込種別
+ */
+function checkContactType(contactType: string) {
+  let reserved:boolean = false;
+  let meet:boolean = false;
+  let sendfile:boolean = false;
+  let contactTypeMessage: string = "";
+
+  switch(contactType){
+    case '1':
+      reserved = true;
+      meet = true;
+      contactTypeMessage = "オンライン説明会を予約したい";
+      break;
+    case '2':
+      reserved = true;
+      contactTypeMessage = "現地の見学説明会を予約したい";
+      break;
+    case '3':
+      sendfile = true;
+      contactTypeMessage = "資料を送付してほしい";
+      break;
+    case '': //未設定はOK
+      break;
+    default: //1-3,''未設定以外の場合NG
+      throw new Error("問い合わせ種別不正[" + contactType + "]");
+  }
+
+  return { reserved:reserved, meet:meet , sendfile:sendfile, contactTypeMessage:contactTypeMessage};
+}
+
+/**
+ * イベント名を編集する
+ * @param reserved 予約設定
+ * @param meet meet設定
+ * @param sendfile ファイル送信
+ * @param eventName イベント名
+ */
+function editEventName(reserved: boolean, meet: boolean, sendfile: boolean, eventName: string): string{
+  if (meet == true) return eventName + 'オンライン説明会';
+  if (reserved == true) return eventName + '現地見学説明会';
+  if (sendfile == true) return eventName;
+  return eventName;
+}
 /*
 クライアントへのレスポンス
 */
@@ -287,7 +397,7 @@ function sendReserveMail(mailAddress :string,
   // メールオプション
   const option = {from: 'contact@harbors.sh', name: 'HarborS運営スタッフ', cc:carbonCopyMail};
   // 件名
-  const title = eventName + "申込のお知らせ";
+  const title = "[HarborS表参道]" + eventName + "申込のお知らせ";
   //　予約完了メールのテンプレートをドキュメントより取得
   const document = DocumentApp.openById(meilTemplateId);
   const bodyTemplate = document.getBody().getText();
@@ -300,11 +410,60 @@ function sendReserveMail(mailAddress :string,
   // 予約時間をセット
   body = body.replace("%visitTime%", visitTime);
   // Web会議のURL
-  body = body.replace("%meetAddress%", webUrl);
+  if(webUrl==''){
+    body = body.replace("%meetAddress%", '');
+  }else{
+    body = body.replace("%meetAddress%", '会議URL： ' + webUrl);
+  }
 
   GmailApp.sendEmail(mailAddress, title, body, option);
-
 }
+
+/**
+ * 資料送付メールを送信する
+ * @param {string} mailAddress 送信先アドレス
+ * @param {string} contactName 予約者者名
+ * @param {string} eventName   予約イベント名
+ * @param {string} carbonCopyMail CCの送信先
+ * @param {string} sendFileId     送信ファイルの名前付き範囲の定義名
+ * @param {string} meilTemplateId テンプレートID
+ * @return void
+ */
+function sendAttachEmail(mailAddress :string,
+                         contactName :string,
+                         eventName :string,
+                         carbonCopyMail: string,
+                         sendFileId: string,
+                         meilTemplateId :string) :void{
+
+  //添付ファイルを取得
+  let arrReport:Array<GoogleAppsScript.Drive.File> = [];
+  try{
+    const  itemValues = SpreadsheetApp.getActive().getRangeByName(sendFileId).getValues();
+    for (let item of itemValues){
+      arrReport.push(DriveApp.getFileById(item.toString()));
+    }
+  }catch(error){
+    throw new Error('添付ファイル取得エラー(' + error + ')');
+  }
+
+  // メールオプション
+  const option = {from: 'contact@harbors.sh', name: 'HarborS運営スタッフ', cc:carbonCopyMail , attachments:arrReport};
+
+  // 件名
+  const title = "[HarborS表参道 資料請求]" +eventName + "に関する資料を送付致します";
+
+  //　予約完了メールのテンプレートをドキュメントより取得
+  const document = DocumentApp.openById(meilTemplateId);
+  const bodyTemplate = document.getBody().getText();
+  // 氏名をセット
+  const body = bodyTemplate
+               .replace(/%contactName%/g, contactName)
+               .replace(/%eventName%/g, eventName);
+
+  GmailApp.sendEmail(mailAddress, title, body, option);
+}
+
 /**
  *
  * @param noticeName
