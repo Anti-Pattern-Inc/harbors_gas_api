@@ -12,8 +12,8 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
     const sheetName: string = e.parameter['sheetName'];
     let keys: string[] = [];
     let meilTemplateId: string = ''         // メールテンプレートID
-    let slackMessage : string = '';         // Slack通知用メッセージ
-    let sheetsRangeName : string = '';      // 添付ファイルのIDの設定場所
+    let slackMessage: string = '';         // Slack通知用メッセージ
+    let sheetsRangeName: string = '';      // 添付ファイルのIDの設定場所
 
     const ret = checkContactType(e.parameter['contact_type']);
     const meet = ret.meet;
@@ -250,9 +250,9 @@ function reservedEvent(eventName: string, name: string , startDate: Date, endDat
  * @param contactType フォームから送信される申込種別
  */
 function checkContactType(contactType: string) {
-  let reserved:boolean = false;
-  let meet:boolean = false;
-  let sendfile:boolean = false;
+  let reserved: boolean = false;
+  let meet: boolean = false;
+  let sendfile: boolean = false;
   let contactTypeMessage: string = "";
 
   switch(contactType){
@@ -275,7 +275,7 @@ function checkContactType(contactType: string) {
       throw new Error("問い合わせ種別不正[" + contactType + "]");
   }
 
-  return { reserved:reserved, meet:meet , sendfile:sendfile, contactTypeMessage:contactTypeMessage};
+  return { reserved, meet , sendfile, contactTypeMessage };
 }
 
 /**
@@ -332,7 +332,7 @@ function existEventInCalendar(
     calendar: GoogleAppsScript.Calendar.Calendar,
     startDate: Date,
     endDate: Date
- ): boolean {
+  ): boolean {
 
     // 変数eventsは「CalendarEvent」を持つ配列
     const events = calendar.getEvents(startDate, endDate);
@@ -341,7 +341,7 @@ function existEventInCalendar(
 
     // イベントがなければ、falseを返却
     if (events.length < 1) {
-       return false;
+      return false;
     }
     // イベントが一つでもあれば、trueを返却
     return true;
@@ -358,7 +358,7 @@ function postMessageToContactChannel(message: string): void {
   // 投稿に必要なデータを用意
   const jsonData =
   {
-      "text" : message  // 投稿メッセージ
+    "text": message  // 投稿メッセージ
   };
   // JSON文字列に変換
   const payload = JSON.stringify(jsonData);
@@ -385,14 +385,14 @@ function postMessageToContactChannel(message: string): void {
  * @param {string} meilTemplateId テンプレートID
  * @return void
  */
-function sendReserveMail(mailAddress :string,
-                         contactName :string,
-                         eventName :string,
-                         visitDate :string,
-                         visitTime :string,
-                         carbonCopyMail: string,
-                         webUrl :string,
-                         meilTemplateId :string) :void{
+function sendReserveMail(mailAddress: string,
+                        contactName: string,
+                        eventName: string,
+                        visitDate: string,
+                        visitTime: string,
+                        carbonCopyMail: string,
+                        webUrl: string,
+                        meilTemplateId:string): void{
 
   // メールオプション
   const option = {from: 'contact@harbors.sh', name: 'HarborS運営スタッフ', cc:carbonCopyMail};
@@ -429,12 +429,12 @@ function sendReserveMail(mailAddress :string,
  * @param {string} meilTemplateId テンプレートID
  * @return void
  */
-function sendAttachEmail(mailAddress :string,
-                         contactName :string,
-                         eventName :string,
-                         carbonCopyMail: string,
-                         sendFileId: string,
-                         meilTemplateId :string) :void{
+function sendAttachEmail(mailAddress: string,
+                        contactName: string,
+                        eventName: string,
+                        carbonCopyMail: string,
+                        sendFileId: string,
+                        meilTemplateId: string): void{
 
   //添付ファイルを取得
   let arrReport:Array<GoogleAppsScript.Drive.File> = [];
@@ -458,8 +458,8 @@ function sendAttachEmail(mailAddress :string,
   const bodyTemplate = document.getBody().getText();
   // 氏名をセット
   const body = bodyTemplate
-               .replace(/%contactName%/g, contactName)
-               .replace(/%eventName%/g, eventName);
+                .replace(/%contactName%/g, contactName)
+                .replace(/%eventName%/g, eventName);
 
   GmailApp.sendEmail(mailAddress, title, body, option);
 }
@@ -473,9 +473,9 @@ function sendAttachEmail(mailAddress :string,
  * @returns GoogleAppsScript.Calendar
  */
 function createEventToCalendar(noticeName: string,
-                               startDate: Date,
-                               endDate: Date,
-                               meet: boolean): GoogleAppsScript.Calendar.Schema.Event{
+                              startDate: Date,
+                              endDate: Date,
+                              meet: boolean): GoogleAppsScript.Calendar.Schema.Event{
   // テレビ会議利用のため
   // Googel Calendar API にてカレンダー登録
   const CALENDAR_CONTACT_ID = PropertiesService.getScriptProperties().getProperty('CALENDAR_CONTACT_ID');
@@ -495,7 +495,7 @@ function createEventToCalendar(noticeName: string,
           type: "hangoutsMeet"
         },
         requestId: PropertiesService.getScriptProperties().getProperty('CALENDAR_REQUEST_ID')
-       }
+      }
     }
   }
 
