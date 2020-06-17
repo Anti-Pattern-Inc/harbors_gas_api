@@ -26,7 +26,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
     eventName = sheetName;
 
     switch (sheetName) {
-      case 'HarborSコワーキング会員':
+      case 'コワーキング会員':
         keys = [
           "name",
           "mail",
