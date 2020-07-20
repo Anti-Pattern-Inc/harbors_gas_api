@@ -11,7 +11,7 @@ function doPost (e: { parameter: { [x: string]: any; }; }): any {
     const sheetName: string = e.parameter.sheetName
     let keys: string[] = []
     let mailTemplateId: string = '' // メールテンプレートID
-    const mailAttachTemplateId: string = '' //
+    let mailAttachTemplateId: string = '' //
     let slackMessage: string = '' // Slack通知用メッセージ
     let sheetsRangeName: string = '' // 添付ファイルのIDの設定場所
 
@@ -39,6 +39,7 @@ function doPost (e: { parameter: { [x: string]: any; }; }): any {
         ]
         eventName = editEventName(reserved, meet, sendfile, 'コワーキングスペース')
         mailTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE_CW')
+        mailAttachTemplateId = PropertiesService.getScriptProperties().getProperty('ATTACH_EMAIL_TEMPLATE_CW')
         sheetsRangeName = 'CW_EMAIL_ATTACH_FILEID'
         break
       case 'バーチャルオフィス会員':
@@ -54,6 +55,7 @@ function doPost (e: { parameter: { [x: string]: any; }; }): any {
         ]
         eventName = editEventName(reserved, meet, sendfile, 'バーチャルオフィス')
         mailTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE_VO')
+        mailAttachTemplateId = PropertiesService.getScriptProperties().getProperty('ATTACH_EMAIL_TEMPLATE_VO')
         sheetsRangeName = 'VO_EMAIL_ATTACH_FILEID'
         break
       case 'HarborSLP':
@@ -88,6 +90,7 @@ function doPost (e: { parameter: { [x: string]: any; }; }): any {
         ]
         eventName = editEventName(reserved, meet, sendfile, 'extends')
         mailTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE_EXTENDS')
+        mailAttachTemplateId = PropertiesService.getScriptProperties().getProperty('ATTACH_EMAIL_TEMPLATE_EXTENDS')
         sheetsRangeName = 'EX_EMAIL_ATTACH_FILEID'
         break
       case 'testGas':
@@ -158,7 +161,7 @@ function doPost (e: { parameter: { [x: string]: any; }; }): any {
           eventName,
           PropertiesService.getScriptProperties().getProperty('AP_CONTACT_EMAIL'),
           sheetsRangeName,
-          PropertiesService.getScriptProperties().getProperty('ATTACH_EMAIL_TEMPLATE')
+          mailAttachTemplateId
         )
       } catch (error) {
         putlog(error)
