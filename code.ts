@@ -11,7 +11,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
     addData.push(timeStamp);
     const sheetName: string = e.parameter['sheetName'];
     let keys: string[] = [];
-    let meilTemplateId: string = ''         // メールテンプレートID
+    let mailTemplateId: string = ''         // メールテンプレートID
     let slackMessage: string = '';         // Slack通知用メッセージ
     let sheetsRangeName: string = '';      // 添付ファイルのIDの設定場所
 
@@ -38,7 +38,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
           "remarks"
         ];
         eventName = editEventName(reserved, meet, sendfile, "コワーキングスペース");
-        meilTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE');
+        mailTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE');
         sheetsRangeName = 'CW_EMAIL_ATTACH_FILEID';
         break;
       case 'バーチャルオフィス会員':
@@ -53,7 +53,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
           "remarks"
         ];
         eventName = editEventName(reserved, meet, sendfile, "バーチャルオフィス");
-        meilTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE');
+        mailTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE');
         sheetsRangeName = 'VO_EMAIL_ATTACH_FILEID';
         break;
       case 'HarborSLP':
@@ -87,7 +87,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
           "remarks"
         ];
         eventName = editEventName(reserved, meet, sendfile, "extends");
-        meilTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE_EXTENDS');
+        mailTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE_EXTENDS');
         sheetsRangeName = 'EX_EMAIL_ATTACH_FILEID';
         break;
       case 'testGas':
@@ -130,7 +130,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
                         e.parameter['preferred_visit_time'],
                         PropertiesService.getScriptProperties().getProperty('AP_CONTACT_EMAIL'),
                         ret.webUrl,
-                        meilTemplateId
+                        mailTemplateId
                         );
       }catch(error){
         putlog(error);
@@ -382,7 +382,7 @@ function postMessageToContactChannel(message: string): void {
  * @param {string} visitTime   利用開始時間
  * @param {string} carbonCopyMail CCの送信先
  * @param {string} webUrl       Meetの接続先
- * @param {string} meilTemplateId テンプレートID
+ * @param {string} mailTemplateId テンプレートID
  * @return void
  */
 function sendReserveMail(mailAddress: string,
@@ -392,14 +392,14 @@ function sendReserveMail(mailAddress: string,
                         visitTime: string,
                         carbonCopyMail: string,
                         webUrl: string,
-                        meilTemplateId:string): void{
+                        mailTemplateId:string): void{
 
   // メールオプション
   const option = {from: 'contact@harbors.sh', name: 'HarborS運営スタッフ', cc:carbonCopyMail};
   // 件名
   const title = "[HarborS表参道]" + eventName + "申込のお知らせ";
   //　予約完了メールのテンプレートをドキュメントより取得
-  const document = DocumentApp.openById(meilTemplateId);
+  const document = DocumentApp.openById(mailTemplateId);
   const bodyTemplate = document.getBody().getText();
   // 氏名をセット
   let body = bodyTemplate.replace("%contactName%", contactName);
@@ -426,7 +426,7 @@ function sendReserveMail(mailAddress: string,
  * @param {string} eventName   予約イベント名
  * @param {string} carbonCopyMail CCの送信先
  * @param {string} sendFileId     送信ファイルの名前付き範囲の定義名
- * @param {string} meilTemplateId テンプレートID
+ * @param {string} mailTemplateId テンプレートID
  * @return void
  */
 function sendAttachEmail(mailAddress: string,
@@ -434,7 +434,7 @@ function sendAttachEmail(mailAddress: string,
                         eventName: string,
                         carbonCopyMail: string,
                         sendFileId: string,
-                        meilTemplateId: string): void{
+                        mailTemplateId: string): void{
 
   //添付ファイルを取得
   let arrReport:Array<GoogleAppsScript.Drive.File> = [];
@@ -454,7 +454,7 @@ function sendAttachEmail(mailAddress: string,
   const title = "[HarborS表参道 資料請求]" +eventName + "に関する資料を送付致します";
 
   //　予約完了メールのテンプレートをドキュメントより取得
-  const document = DocumentApp.openById(meilTemplateId);
+  const document = DocumentApp.openById(mailTemplateId);
   const bodyTemplate = document.getBody().getText();
   // 氏名をセット
   const body = bodyTemplate
