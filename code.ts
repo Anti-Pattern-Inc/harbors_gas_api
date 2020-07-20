@@ -38,7 +38,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
           "remarks"
         ];
         eventName = editEventName(reserved, meet, sendfile, "コワーキングスペース");
-        mailTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE');
+        mailTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE_CW');
         sheetsRangeName = 'CW_EMAIL_ATTACH_FILEID';
         break;
       case 'バーチャルオフィス会員':
@@ -53,7 +53,7 @@ function doPost(e: { parameter: { [x: string]: any; }; }): any {
           "remarks"
         ];
         eventName = editEventName(reserved, meet, sendfile, "バーチャルオフィス");
-        mailTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE');
+        mailTemplateId = PropertiesService.getScriptProperties().getProperty('RESERVE_CONFIRMATION_TEMPLATE_VO');
         sheetsRangeName = 'VO_EMAIL_ATTACH_FILEID';
         break;
       case 'HarborSLP':
